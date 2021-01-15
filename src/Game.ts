@@ -4,14 +4,18 @@ import G from "./models/G";
 
 export const War: Game<G> = {
     setup: () => ({ territories }),
-
-    turn: {
-        moveLimit: 1,
-    },
-
-    moves: {
-        clickCell: (G, ctx, id: number) => {
-            G.territories[id].currentOwner = ctx.currentPlayer;
-        },
-    },
+    phases: {
+        choosing: {
+            start: true,
+            moves: {
+                clickCell: (G, ctx, id: number) => {
+                    if (G.territories[id].currentOwner != null || ctx.events?.endTurn === undefined) {
+                        return;
+                    }
+                    G.territories[id].currentOwner = ctx.currentPlayer;
+                    ctx.events.endTurn();
+                },
+            },
+        }
+    }
 };
