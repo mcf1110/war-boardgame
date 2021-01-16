@@ -22,7 +22,7 @@ export class Board extends React.Component<BoardProps<G>> {
                 <h1>Guenta ai filhote</h1>
             </div>)
         }
-        if(!this.props.playerID || !this.props.ctx.activePlayers){
+        if(!this.props.playerID){
             //spectator
             return (<div>
                 <div style={{ display: 'flex' }}>
@@ -36,13 +36,18 @@ export class Board extends React.Component<BoardProps<G>> {
                 {this.props.G.territories.map((t, id) => <div onClick={() => this.claim(id)} key={t.name}><Territory t={t}></Territory></div>)}
             </div>)
         }
-        const phase = this.props.ctx.activePlayers[this.props.playerID];
+        if(this.props.ctx.activePlayers === null){
+            return <p>Erro</p>
+        }
+        const phase = this.props.ctx.activePlayers[this.props.playerID] as string;
         if(phase === 'deploy'){
             return  (<div style={{ display: 'flex' }}>
                 {this.props.G.territories.map((t, id) => (<div key={t.name}>
                     <Territory t={t}></Territory>
-                    <button onClick={() => this.deploy(id, 1)}>+</button>
-                    <button onClick={() => this.deploy(id, -1)}>-</button>
+                    {t.currentOwner === this.props.ctx.currentPlayer ?
+                    (<div><button onClick={() => this.deploy(id, 1)}>+</button>
+                    <button onClick={() => this.deploy(id, -1)}>-</button></div>)
+                    : ''}
                     </div>))}
                 <button onClick={() => this.props.moves.done()}>Finalizar</button>
             </div>);
