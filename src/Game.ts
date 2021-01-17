@@ -3,7 +3,7 @@ import territories from "./data/territories";
 import G from "./models/G";
 
 export const War: Game<G> = {
-    setup: (ctx) => ({ territories, availableTroops: Array(ctx.numPlayers).fill(0) }),
+    setup: (ctx) => ({ territories, availableTroops: Array(ctx.numPlayers).fill(0), armedAttack: { from: null, to: null, amount: 0 } }),
     phases: {
         choosing: {
             start: true,
@@ -67,7 +67,20 @@ export const War: Game<G> = {
                         },
                     },
                     attack: {
-
+                        moves: {
+                            setFrom(G, ctx, from: number) {
+                                G.armedAttack.from = from;
+                            },
+                            setTo(G, ctx, to: number) {
+                                G.armedAttack.to = to;
+                            },
+                            setAmount(G, ctx, amount: number) {
+                                if (amount > 3 || amount < 1) {
+                                    return;
+                                }
+                                G.armedAttack.amount = amount;
+                            }
+                        }
                     }
                 }
             }

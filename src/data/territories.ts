@@ -3,7 +3,7 @@ import Territory from "../models/Territory";
 const makeTerritory = (name: string) => ({
     name: name,
     currentOwner: null,
-    nTroops: 0,
+    nTroops: 1,
     nTroopsToDeploy: 0
 });
 

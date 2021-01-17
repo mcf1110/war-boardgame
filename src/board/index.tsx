@@ -1,6 +1,8 @@
 import { BoardProps } from 'boardgame.io/dist/types/packages/react';
 import React from 'react';
+import { createTextSpanFromBounds } from 'typescript';
 import G from '../models/G';
+import ITerritory from '../models/Territory';
 import Territory from './territory/Territory';
 
 export class Board extends React.Component<BoardProps<G>> {
@@ -10,6 +12,14 @@ export class Board extends React.Component<BoardProps<G>> {
 
     deploy(id: number, amount: number) {
         this.props.moves.deployToTerritory(id, amount);
+    }
+
+    setFromTo(t: ITerritory, id: number){
+        if(t.currentOwner === this.props.ctx.currentPlayer){
+            this.props.moves.setFrom(id)
+        } else {
+            this.props.moves.setTo(id)
+        }
     }
 
     render() {
@@ -52,7 +62,18 @@ export class Board extends React.Component<BoardProps<G>> {
                 <button onClick={() => this.props.moves.done()}>Finalizar</button>
             </div>);
         } else if (phase === 'attack'){
-            return <h1>Atacar</h1>
+            return (<div style={{ display: 'flex' }}>
+                {this.props.G.territories.map((t, id) => <div onClick={() => this.setFromTo(t, id)} key={t.name}>
+
+                    <Territory t={t}></Territory>
+                    
+                    </div>)}
+                <div>
+                    <h1>De: {this.props.G.armedAttack.from != null && this.props.G.territories[this.props.G.armedAttack.from].name}</h1>
+                    <h1>Para: {this.props.G.armedAttack.to != null && this.props.G.territories[this.props.G.armedAttack.to].name}</h1>
+                    <h1>Qtd: {this.props.G.armedAttack.amount}</h1>
+                </div>
+            </div>)
         }
         return <p>?</p>
     }
