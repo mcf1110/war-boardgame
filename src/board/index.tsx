@@ -76,6 +76,20 @@ export class Board extends React.Component<BoardProps<G>> {
                     <button onClick={() => this.props.moves.commit()}>Commit</button>
                 </div>
             </div>)
+        } else if (phase === 'postAttack') {
+            return (<div style={{ display: 'flex' }}>
+                {this.props.G.territories.map((t, id) => <div onClick={() => this.setFromTo(t, id)} key={t.name}>
+
+                    <Territory t={t}></Territory>
+                    
+                    </div>)}
+                    <div>
+                        <button onClick={() => this.props.moves.setToMove(this.props.G.armedAttack.amountToMove+1)}>+</button>
+                        <button onClick={() => this.props.moves.setToMove(this.props.G.armedAttack.amountToMove-1)}>-</button>
+                        <button onClick={() => this.props.moves.commit()}>Mover {this.props.G.armedAttack.amountToMove} tropas para {this.props.G.territories[Number(this.props.G.armedAttack.to)].name}</button>
+                    </div>
+                </div>
+            );
         }
         return <p>?</p>
     }

@@ -6,6 +6,7 @@ export default interface G {
     armedAttack: {
         from: number | null,
         to: number | null,
-        amount: number
+        amount: number,
+        amountToMove: number;
     }
 }

@@ -4,7 +4,7 @@ import G from "./models/G";
 import { zipWith } from 'ramda'
 
 export const War: Game<G> = {
-    setup: (ctx) => ({ territories, availableTroops: Array(ctx.numPlayers).fill(0), armedAttack: { from: null, to: null, amount: 0 } }),
+    setup: (ctx) => ({ territories, availableTroops: Array(ctx.numPlayers).fill(0), armedAttack: { from: null, to: null, amount: 0, amountToMove: 1 } }),
     phases: {
         choosing: {
             start: true,
@@ -82,24 +82,46 @@ export const War: Game<G> = {
                                 G.armedAttack.amount = amount;
                             },
                             commit(G, ctx) {
+                                if (!ctx.events?.setStage) {
+                                    return;
+                                }
                                 const attack = ctx.random?.D6(G.armedAttack.amount).sort().reverse() || []
                                 const defense = ctx.random?.D6(G.territories[Number(G.armedAttack.to)].nTroops).sort().reverse() || []
                                 const isVictory = zipWith((x, y) => x > y, attack, defense);
                                 const defenseLosses = isVictory.filter(x => x).length;
                                 const attackLosses = isVictory.length - defenseLosses;
 
-                                G.territories[Number(G.armedAttack.from)].nTroops -= attackLosses;
                                 G.territories[Number(G.armedAttack.to)].nTroops -= defenseLosses;
 
                                 if (G.territories[Number(G.armedAttack.to)].nTroops <= 0) {
                                     G.territories[Number(G.armedAttack.to)].currentOwner = ctx.currentPlayer;
+                                    G.armedAttack.amount -= attackLosses;
+                                    ctx.events.setStage('postAttack');
+                                } else {
+                                    G.territories[Number(G.armedAttack.from)].nTroops -= attackLosses;
                                 }
-                                // go to postAttack phase to decide how many troops to actually move there
                             }
                         }
                     },
                     postAttack: {
+                        moves: {
+                            setToMove(G, ctx, amt) {
+                                G.armedAttack.amountToMove = Math.max(1, Math.min(amt, G.armedAttack.amount));
+                            },
+                            commit(G, ctx) {
+                                if (!ctx.events?.setStage) {
+                                    return;
+                                }
+                                G.territories[Number(G.armedAttack.from)].nTroops -= G.armedAttack.amountToMove;
+                                G.territories[Number(G.armedAttack.to)].nTroops += G.armedAttack.amountToMove;
 
+                                G.armedAttack.from = null;
+                                G.armedAttack.to = null;
+                                G.armedAttack.amount = 1;
+                                G.armedAttack.amountToMove = 1;
+                                ctx.events.setStage('attack');
+                            }
+                        }
                     },
                     remanage: {
 
