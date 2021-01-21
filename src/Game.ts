@@ -1,6 +1,7 @@
 import { Game } from "boardgame.io";
 import territories from "./data/territories";
 import G from "./models/G";
+import { zipWith } from 'ramda'
 
 export const War: Game<G> = {
     setup: (ctx) => ({ territories, availableTroops: Array(ctx.numPlayers).fill(0), armedAttack: { from: null, to: null, amount: 0 } }),
@@ -69,18 +70,39 @@ export const War: Game<G> = {
                     attack: {
                         moves: {
                             setFrom(G, ctx, from: number) {
-                                G.armedAttack.from = from;
+                                G.armedAttack.from = G.armedAttack.from === from ? null : from;
                             },
                             setTo(G, ctx, to: number) {
-                                G.armedAttack.to = to;
+                                G.armedAttack.to = G.armedAttack.to === to ? null : to;
                             },
                             setAmount(G, ctx, amount: number) {
                                 if (amount > 3 || amount < 1) {
                                     return;
                                 }
                                 G.armedAttack.amount = amount;
+                            },
+                            commit(G, ctx) {
+                                const attack = ctx.random?.D6(G.armedAttack.amount).sort().reverse() || []
+                                const defense = ctx.random?.D6(G.territories[Number(G.armedAttack.to)].nTroops).sort().reverse() || []
+                                const isVictory = zipWith((x, y) => x > y, attack, defense);
+                                const defenseLosses = isVictory.filter(x => x).length;
+                                const attackLosses = isVictory.length - defenseLosses;
+
+                                G.territories[Number(G.armedAttack.from)].nTroops -= attackLosses;
+                                G.territories[Number(G.armedAttack.to)].nTroops -= defenseLosses;
+
+                                if (G.territories[Number(G.armedAttack.to)].nTroops <= 0) {
+                                    G.territories[Number(G.armedAttack.to)].currentOwner = ctx.currentPlayer;
+                                }
+                                // go to postAttack phase to decide how many troops to actually move there
                             }
                         }
+                    },
+                    postAttack: {
+
+                    },
+                    remanage: {
+
                     }
                 }
             }

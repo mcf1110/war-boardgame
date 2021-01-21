@@ -1,6 +1,5 @@
 import { BoardProps } from 'boardgame.io/dist/types/packages/react';
 import React from 'react';
-import { createTextSpanFromBounds } from 'typescript';
 import G from '../models/G';
 import ITerritory from '../models/Territory';
 import Territory from './territory/Territory';
@@ -72,6 +71,9 @@ export class Board extends React.Component<BoardProps<G>> {
                     <h1>De: {this.props.G.armedAttack.from != null && this.props.G.territories[this.props.G.armedAttack.from].name}</h1>
                     <h1>Para: {this.props.G.armedAttack.to != null && this.props.G.territories[this.props.G.armedAttack.to].name}</h1>
                     <h1>Qtd: {this.props.G.armedAttack.amount}</h1>
+                    <div><button onClick={() => this.props.moves.setAmount(this.props.G.armedAttack.amount+1)}>+</button>
+                    <button onClick={() => this.props.moves.setAmount(this.props.G.armedAttack.amount-1)}>-</button></div>
+                    <button onClick={() => this.props.moves.commit()}>Commit</button>
                 </div>
             </div>)
         }
